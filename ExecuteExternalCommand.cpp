@@ -1,6 +1,11 @@
 #include "defs.h"
 
 bool executeExternalCommand(char * command) {
-    std::cout << command << std::endl;
-    return false;
+
+    char * token;
+    while((token = strtok(NULL, " \t\n"))) {
+
+    }
+
+    return true;
 }

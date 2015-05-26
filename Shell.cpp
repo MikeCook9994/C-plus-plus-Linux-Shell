@@ -7,8 +7,8 @@ int main(int charc, char *argv[]) {
     for(;;) {
         std::cout << "ᕕ( ᐛ )ᕗ"; //prints the console prompt
 
-        command = (char *)malloc(sizeof(char) * MAXCOMMANDLENGTH);
-        fgets(command, 1024, stdin); // gets the command
+        command = new char[MAXCOMMANDLENGTH];
+        fgets(command, MAXCOMMANDLENGTH, stdin); // gets the command
 
         token = (char *)strtok(command, " \t\n");
         if(!token)
