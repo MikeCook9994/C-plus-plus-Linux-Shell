@@ -1,5 +1,5 @@
 all:	
-	g++ shell.cpp -o LeShell -Wall -Werror
+	g++ shell.cpp ParseCommandLine.cpp -o LeShell -Wall -Werror
 
 clean:
 	rm -rf LeShell *.o
