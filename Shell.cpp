@@ -1,12 +1,4 @@
-#include <iostream>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#define MAXCOMMANDLENGTH 1024
-
-bool handleShellOperation(char * token);
+#include "defs.h"
 
 int main(int charc, char *argv[]) {
 
@@ -17,43 +9,24 @@ int main(int charc, char *argv[]) {
 
         command = (char *)malloc(sizeof(char) * MAXCOMMANDLENGTH);
         fgets(command, 1024, stdin); // gets the command
-        strtok(command, "\n\0"); //strips the newline and null character off the command"
 
-        token = (char *)strtok(command, " \t");
+        token = (char *)strtok(command, " \t\n");
+        if(!token)
+            continue;
 
-        if( !strcmp(token, "cd") || !strcmp(token, "pwd") || !strcmp(token, "exit")) {
-            if(!handleShellOperation(token)) {
+        if(!strcmp(token, "cd") || !strcmp(token, "pwd") || !strcmp(token, "exit")) {
+            if(!executeInternalCommand(token)) {
                 std::cerr << "Error!" << std::endl;
-                exit(0);
             }
-            else {
-
-            }
+        }
+        else if(!executeExternalCommand(token)) {
+            std::cerr << "Error!" << std::endl;
         }
 
         free(command);
     }
 
     return 0;
-}
-
-bool handleShellOperation(char * token) {
-    if(!strcmp(token, "cd")) {
-        char * path = strtok(NULL, " \t");
-        if(path == NULL)
-            path = getenv("HOME");
-            chdir(path);
-        return true;
-    }
-    else if(!strcmp(token, "pwd")) {
-        char * path = (char *)malloc(sizeof(char) * MAXCOMMANDLENGTH);
-        std::cout << getcwd(path, MAXCOMMANDLENGTH) << std::endl;
-        return true;
-    }
-    else if(!strcmp(token, "exit")) {
-        exit(0);
-    }
-    return false;
 }
 
 
