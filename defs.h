@@ -10,6 +10,10 @@
 
 //definitions
 #define MAXCOMMANDLENGTH 1024
+#define MAXPATHLENGTH 4096
+
+//Shell Function Prototypes
+void error(void);
 
 //ExecuteInlineCommand Function Prototypes
 bool executeInternalCommand(char * command);

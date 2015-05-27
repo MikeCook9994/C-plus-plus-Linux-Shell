@@ -5,12 +5,13 @@ bool executeInternalCommand(char * command) {
         char * path = strtok(NULL, " \t\n");
         if(path == NULL)
             path = getenv("HOME");
-        chdir(path);
+        if(chdir(path)) //verifies the directory changes appropriately
+            return false;
         return true;
     }
     else if(!strcmp(command, "pwd")) {
-        char * path = new char[MAXCOMMANDLENGTH];
-        std::cout << getcwd(path, MAXCOMMANDLENGTH) << std::endl;
+        char * path = new char[MAXPATHLENGTH];
+        std::cout << getcwd(path, MAXPATHLENGTH) << std::endl;
         delete path;
         return true;
     }

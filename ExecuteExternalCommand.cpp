@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "LinkedList.h"
 
 bool executeExternalCommand(char * command) {
 
