@@ -17,7 +17,7 @@ LinkedList<T>::~LinkedList() {
     Node<T> * prev = NULL;
     while(curr) {
         prev = curr;
-        curr = curr->next;
+        curr = curr->getNext();
         delete prev;
     }
     delete head;
@@ -26,11 +26,11 @@ LinkedList<T>::~LinkedList() {
 template<class T>
 void LinkedList<T>::add(T data) {
     Node<T> * curr = head;
-    while(curr->next) { // moves to the end of the list
-        curr = curr->next;
+    while(curr->getNext()) { // moves to the end of the list
+        curr = curr->getNext();
     }
     Node<T> * tmp = new Node<T>;
-    tmp->data = data;
-    tmp->next = NULL;
-    curr->next = tmp;
+    tmp->setData(data);
+    tmp->setNext(NULL);
+    curr->setNext(tmp);
 }

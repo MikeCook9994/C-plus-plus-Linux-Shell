@@ -15,6 +15,7 @@ class LinkedList {
         ~LinkedList();
 
         void add(T data);
+        Node<T> * getHeadNode() {return head;}
 };
 
 #include "LinkedList.tpp"
