@@ -20,7 +20,6 @@ LinkedList<T>::~LinkedList() {
         curr = curr->getNext();
         delete prev;
     }
-    delete head;
 }
 
 template<class T>

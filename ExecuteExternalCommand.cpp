@@ -5,8 +5,11 @@ bool executeExternalCommand(char * command) {
     LinkedList<char *> * tokens = new LinkedList<char *>(command);
 
     tokenizeString(tokens);
+
     if(!validateCommand(tokens))
         return false;
+
+    delete tokens;
 
     return true;
 }
