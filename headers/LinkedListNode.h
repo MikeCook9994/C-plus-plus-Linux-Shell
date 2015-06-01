@@ -19,6 +19,6 @@ class Node {
         T getData(void) {return data;}
 };
 
-#include "LinkedListNode.tpp"
+#include "../implementation files/LinkedListNode.tpp"
 
 #endif //LINKED_LIST_NODE

@@ -1,4 +1,4 @@
-#include "defs.h"
+#include "headers/defs.h"
 
 bool executeInternalCommand(char * command) {
     if(!strcmp(command, "cd")) {
@@ -16,6 +16,8 @@ bool executeInternalCommand(char * command) {
         return true;
     }
     else if(!strcmp(command, "exit")) {
+        if(strtok(NULL, " \t\n") != NULL)
+            return false;
         exit(0);
     }
     return false;

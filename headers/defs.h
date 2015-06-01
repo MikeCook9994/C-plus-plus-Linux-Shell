@@ -19,6 +19,6 @@ void error(void);
 bool executeInternalCommand(char * command);
 
 //ExecuteExternalCommand Function Prototypes
-bool executeExternalCommand(char * command);
+bool executeExternalCommand(char *firstArg);
 
 #endif //SHELL_DEFS
