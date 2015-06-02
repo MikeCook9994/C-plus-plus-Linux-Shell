@@ -1,8 +1,10 @@
 #include "headers/Command.h"
 
-Command::Command(LinkedList<char *> * argList, int numArgs, int infd, int outfd) {
-    inputFD = infd;
-    outputFD = outfd;
+Command::Command(LinkedList<char *> * argList, int numArgs, const char * ifn, const char * ofn) {
+    inFileName = ifn;
+    inputFD = STDIN_FILENO;
+    outFileName = ofn;
+    outputFD = STDOUT_FILENO;
     arguments = (char **)malloc(sizeof(char *) * numArgs);
     setArgList(argList, numArgs);
 }

@@ -14,6 +14,9 @@ bool executeExternalCommand(char * firstArg) {
     if(!buildCommands(tokens, commands))
         return false;
 
+    if(!executeCommands(commands))
+        return false;
+
     delete tokens;
 
     return true;
@@ -38,7 +41,7 @@ bool validateCommand(LinkedList<char *> * tokens) {
     int currCharType = getTokenType(currToken->getData());
     int nextCharType;
 
-    if(currCharType != NSC)
+    if(currCharType != NA)
         return false;
 
     if(!currToken->getNext())
@@ -51,7 +54,7 @@ bool validateCommand(LinkedList<char *> * tokens) {
 
         currCharType = getTokenType(currToken->getData());
 
-        if (currCharType != NSC) {
+        if (currCharType != NA) {
 
             if(currCharType == PIPE) {
 
@@ -64,7 +67,7 @@ bool validateCommand(LinkedList<char *> * tokens) {
                     return false;
 
                 nextCharType = getTokenType(nextToken->getData());
-                if(nextCharType != NSC)
+                if(nextCharType != NA)
                     return false;
             }
 
@@ -80,7 +83,7 @@ bool validateCommand(LinkedList<char *> * tokens) {
                     return false;
 
                 nextCharType = getTokenType(nextToken->getData());
-                if(nextCharType != NSC)
+                if(nextCharType != NA)
                     return false;
             }
 
@@ -96,7 +99,7 @@ bool validateCommand(LinkedList<char *> * tokens) {
                     return false;
 
                 nextCharType = getTokenType(nextToken->getData());
-                if (nextCharType != NSC)
+                if (nextCharType != NA)
                     return false;
 
             }
@@ -113,45 +116,98 @@ bool validateCommand(LinkedList<char *> * tokens) {
 LinkedList<Command *> * buildCommands(LinkedList<char *> * tokens, LinkedList<Command *> * commands) {
 
     Command * command = NULL;
-    LinkedList<char *> *arguments = new LinkedList<char *>();
+    LinkedList<char *> *arguments = NULL;
     int numArgs = 0;
-    int inputfd = STDIN_FILENO;
-    int outputfd = STDOUT_FILENO;
+    const char * inFileName = "STDIN";
+    const char * outFileName = "STDOUT";
 
-    Node<char *> *currToken = tokens->getFirst();
+    Node<char *> * currToken = tokens->getFirst();
     int currTokenType;
 
 
     while (currToken != NULL) {
 
         currTokenType = getTokenType(currToken->getData());
+        arguments = new LinkedList<char *>();
 
-        while (currTokenType == NSC || currTokenType == REDIRECT || currTokenType == REDIRECTAPPEND) {
-            if (currTokenType == NSC) {
+        while ((currTokenType == NA || currTokenType == REDIRECT || currTokenType == REDIRECTAPPEND) && currToken != NULL) {
+
+            if (currTokenType == NA) {
 
                 arguments->add(currToken->getData());
                 numArgs++;
 
-                if(currToken->getNext() == NULL) {
+                if(currToken->getNext() == NULL)
                     break;
-                }
+            }
+
+            else /* if(currTokenType == REDIRECT || currTokenType == REDIRECTAPPEND) */ {
+                currToken = currToken->getNext();
+                outFileName = currToken->getData();
             }
 
             currToken = currToken->getNext();
-            currTokenType = getTokenType(currToken->getData());
+            if(currToken != NULL)
+                currTokenType = getTokenType(currToken->getData());
         }
 
-        command = new Command(arguments, numArgs, inputfd, outputfd);
-        commands->add(command);
-        delete arguments;
-        numArgs = 0;
+        if(currTokenType == PIPE) {
+
+            if(!strcmp(outFileName, "STDOUT"))
+                outFileName = "PIPEWRITE";
+
+            command = new Command(arguments, numArgs, inFileName, outFileName);
+            commands->add(command);
+            delete arguments;
+            numArgs = 0;
+
+            outFileName = "STDOUT";
+            inFileName = "PIPEREAD";
+
+        }
+
+        else if(currTokenType == TEE) {
+
+            if(!strcmp(outFileName, "STDOUT"))
+                outFileName = "PIPEWRITE";
+
+            command = new Command(arguments, numArgs, inFileName, outFileName);
+            commands->add(command);
+            delete arguments;
+            numArgs = 0;
+
+            //handles the creation of the my tee command
+            outFileName = "mytee.txt";
+            inFileName = "PIPEREAD";
+            arguments = new LinkedList<char *>((char *)"mytee");
+            numArgs++;
+
+            command = new Command(arguments, numArgs, inFileName, outFileName);
+            commands->add(command);
+            delete arguments;
+            numArgs = 0;
+
+            outFileName = "STDOUT";
+            inFileName = "mytee.txt";
+
+        }
+
+        else /* if(currToken->getNext() == NULL) <- This denotes the end of the input string */ {
+
+            command = new Command(arguments, numArgs, inFileName, outFileName);
+            commands->add(command);
+            delete arguments;
+            return commands;
+        }
 
         currToken = currToken->getNext();
-
     }
 
     return commands;
+}
 
+bool executeCommands(LinkedList<Command *> * commands) {
+        return true;
 }
 
 int getTokenType(char * token) {
@@ -159,6 +215,6 @@ int getTokenType(char * token) {
     if(!strcmp("%", token))  return TEE;
     if(!strcmp(">", token))  return REDIRECT;
     if(!strcmp(">>", token)) return REDIRECTAPPEND;
-    /* does not match */     return NSC;
+    /* does not match */     return NA;
 }
 
