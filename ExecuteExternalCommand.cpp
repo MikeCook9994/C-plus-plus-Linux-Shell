@@ -144,6 +144,10 @@ LinkedList<Command *> * buildCommands(LinkedList<char *> * tokens, LinkedList<Co
             else /* if(currTokenType == REDIRECT || currTokenType == REDIRECTAPPEND) */ {
                 currToken = currToken->getNext();
                 outFileName = currToken->getData();
+                if(currTokenType == REDIRECT)
+                    command->setOutputFD(REDIRECT);
+                else
+                    command->setOutputFD(REDIRECTAPPEND);
             }
 
             currToken = currToken->getNext();
@@ -177,7 +181,7 @@ LinkedList<Command *> * buildCommands(LinkedList<char *> * tokens, LinkedList<Co
             numArgs = 0;
 
             //handles the creation of the my tee command
-            outFileName = "mytee.txt";
+            outFileName = "PIPEWRITE";
             inFileName = "PIPEREAD";
             arguments = new LinkedList<char *>((char *)"mytee");
             numArgs++;
@@ -188,7 +192,7 @@ LinkedList<Command *> * buildCommands(LinkedList<char *> * tokens, LinkedList<Co
             numArgs = 0;
 
             outFileName = "STDOUT";
-            inFileName = "mytee.txt";
+            inFileName = "PIPEREAD";
 
         }
 
@@ -207,7 +211,79 @@ LinkedList<Command *> * buildCommands(LinkedList<char *> * tokens, LinkedList<Co
 }
 
 bool executeCommands(LinkedList<Command *> * commands) {
-        return true;
+
+    Node<Command *> * currCommand = commands->getFirst();
+    Command * command;
+
+    const char * infile;
+    const char * outfile;
+    int infd;
+    int outfd;
+    char ** arguments;
+
+    int pipefd[2];
+
+    int pid = 0;
+    int * status = 0;
+
+    while(currCommand != NULL) {
+
+        command = currCommand->getData();
+
+        infile = command->getInFileName();
+        outfile = command->getOutFileName();
+        arguments = command->getArgList();
+
+        pid = fork();
+
+        if(pid == 0) {
+
+            infile = command->getInFileName();
+            outfile = command->getOutFileName();
+
+            if (strcmp("STDOUT", outfile)) {
+                if (command->getOutputFD() == REDIRECT) {
+                    if ((outfd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC)) == -1)
+                        return false;
+                    dup2(STDOUT_FILENO, outfd);
+                }
+                else if (command->getOutputFD() == REDIRECTAPPEND) {
+                    if ((outfd = open(outfile, O_WRONLY | O_CREAT | O_APPEND)) == -1)
+                        return false;
+                    dup2(STDOUT_FILENO, outfd);
+                }
+                else {
+                    if (pipe(pipefd) == -1)
+                        return false;
+                    dup2(STDOUT_FILENO, pipefd[0]);
+                }
+            }
+
+            if (strcmp("STDIN", infile)) {
+                infd = pipefd[1];
+                dup2(STDIN_FILENO, infd);
+            }
+
+            if (execvp(arguments[0], arguments) == -1) {
+                std::cerr << "Error!" << std::endl;
+                exit(0);
+            }
+
+        }
+        else if(pid > 0) {
+                if(waitpid(pid, status, 0) == -1)
+                    return false;
+        }
+
+        else if(pid == -1) {
+            return false;
+        }
+
+        currCommand = currCommand->getNext();
+
+    }
+
+    return true;
 }
 
 int getTokenType(char * token) {
@@ -217,4 +293,3 @@ int getTokenType(char * token) {
     if(!strcmp(">>", token)) return REDIRECTAPPEND;
     /* does not match */     return NA;
 }
-

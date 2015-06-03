@@ -1,5 +1,7 @@
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "defs.h"
 #include "LinkedList.h"
 #include "Command.h"

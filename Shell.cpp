@@ -34,6 +34,6 @@ int main(int charc, char *argv[]) {
 }
 
 void error(void) {
-    std::cout << "Error!" << std::endl;
+    std::cerr << "Error!" << std::endl;
 }
 
