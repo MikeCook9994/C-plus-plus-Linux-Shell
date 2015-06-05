@@ -217,14 +217,28 @@ bool executeCommands(LinkedList<Command *> * commands) {
 
     const char * infile;
     const char * outfile;
-    int infd;
-    int outfd;
+    int outFDIndex;
+    int inFDIndex;
     char ** arguments;
 
-    int pipefd[2];
+    //creates an array to store all of the pipe file descriptors and fills the array with calls to pipe()
+    int numPipes = 0;
+    while(currCommand != NULL) {
+        if(!strcmp(currCommand->getData()->getInFileName(), "PIPEREAD"))
+            numPipes++;
+        currCommand = currCommand->getNext();
+    }
 
-    int pid = 0;
+    int pipefd[numPipes * 2];
+
+    for(int i = 0; i <= numPipes; i+=2) {
+        pipe((pipefd + i));
+    }
+
+    int pid = 0, pipeIndex = 0, outfd;
     int * status = 0;
+
+    currCommand = commands->getFirst();
 
     while(currCommand != NULL) {
 
@@ -238,35 +252,41 @@ bool executeCommands(LinkedList<Command *> * commands) {
 
         if(pid == 0) {
 
-            infile = command->getInFileName();
-            outfile = command->getOutFileName();
-
-            if (strcmp("STDOUT", outfile)) {
-                if (command->getOutputFD() == REDIRECT) {
-                    if ((outfd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC)) == -1)
-                        return false;
-                    dup2(STDOUT_FILENO, outfd);
+            if(strcmp("STDOUT", outfile)) {
+                if(command->getOutputFD() == REDIRECT) {
+                    outfd = open(outfile, O_CREAT | O_WRONLY | O_TRUNC);
+                    dup2(STDIN_FILENO, outfd);
+                    outFDIndex = numPipes + 1;
+                    pipeIndex++;
                 }
-                else if (command->getOutputFD() == REDIRECTAPPEND) {
-                    if ((outfd = open(outfile, O_WRONLY | O_CREAT | O_APPEND)) == -1)
-                        return false;
-                    dup2(STDOUT_FILENO, outfd);
+
+                else if(command->getOutputFD() == REDIRECTAPPEND) {
+                    outfd = open(outfile, O_CREAT | O_WRONLY | O_APPEND);
+                    dup2(STDIN_FILENO, outfd);
+                    outFDIndex = numPipes + 1;
+                    pipeIndex++;
                 }
                 else {
-                    if (pipe(pipefd) == -1)
-                        return false;
-                    dup2(STDOUT_FILENO, pipefd[0]);
+                    dup2(STDOUT_FILENO, pipefd[pipeIndex]);
+                    outFDIndex = pipefd[pipeIndex];
+                    pipeIndex++;
                 }
             }
 
-            if (strcmp("STDIN", infile)) {
-                infd = pipefd[1];
-                dup2(STDIN_FILENO, infd);
+            if(strcmp("STDIN", infile)) {
+                dup2(STDIN_FILENO, pipefd[pipeIndex]);
+                inFDIndex = pipefd[pipeIndex];
+                pipeIndex++;
+            }
+
+            for(int i = 0; i < numPipes * 2; i++) {
+                if(outFDIndex != pipefd[i] && inFDIndex != pipefd[i])
+                    close(pipefd[i]);
             }
 
             if (execvp(arguments[0], arguments) == -1) {
                 std::cerr << "Error!" << std::endl;
-                exit(0);
+                _Exit(0);
             }
 
         }
@@ -275,7 +295,7 @@ bool executeCommands(LinkedList<Command *> * commands) {
                     return false;
         }
 
-        else if(pid == -1) {
+        else {
             return false;
         }
 
