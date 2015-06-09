@@ -17,16 +17,16 @@ class Command {
 
         ~Command();
 
-        int getInputFD() {return inputFD;}
+        //int getInputFD() {return inputFD;}
         const char * getInFileName() {return inFileName;}
         int getOutputFD() {return outputFD;}
         const char * getOutFileName() {return outFileName;}
         char ** getArgList() {return arguments;}
 
-        void setInputFD(int fd) {inputFD = fd;}
-        void setIntputFileName(char * name) {inFileName = name;}
+        //void setInputFD(int fd) {inputFD = fd;}
+        //void setIntputFileName(char * name) {inFileName = name;}
         void setOutputFD(int fd) {outputFD = fd;}
-        void setOutputFileName(char * name) {outFileName = name;}
+        //void setOutputFileName(char * name) {outFileName = name;}
 };
 
 #endif //COMMAND
