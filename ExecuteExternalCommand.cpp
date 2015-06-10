@@ -268,13 +268,13 @@ bool executeCommands(LinkedList<Command *> * commands) {
         }
     }
 
-    int pid = 0, pipeIndex = 0, outfd;
+    int pid = 0, outfd;
 
     int * status = 0;
 
     currCommand = commands->getFirst();
 
-    while(currCommand != NULL) {
+    for(int i = 0; i <= numPipes; i++) {
 
         command = currCommand->getData();
 
@@ -285,7 +285,14 @@ bool executeCommands(LinkedList<Command *> * commands) {
         pid = fork();
 
         if(pid == 0) {
+
+            if(strcmp("STDIN", infile)) {
+                if(dup2(pipefd[(i - 1) * 2], STDIN_FILENO) == -1)
+                    return false;
+            }
+
             if(strcmp("STDOUT", outfile)) {
+
                 if (command->getOutputFD() == REDIRECT) {
                     if ((outfd = open(outfile, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR)) == -1)
                         return false;
@@ -303,23 +310,17 @@ bool executeCommands(LinkedList<Command *> * commands) {
                         close(outfd);
                 }
                 else {
-                    if (dup2(pipefd[pipeIndex + 1], STDOUT_FILENO) == -1)
+                    if (dup2(pipefd[(i * 2) + 1], STDOUT_FILENO) == -1)
                         return false;
-                    close(pipefd[pipeIndex]);
                 }
             }
-            pipeIndex++;
 
-            if(strcmp("STDIN", infile)) {
-                if(dup2(pipefd[pipeIndex - 1], STDIN_FILENO) == -1)
-                    return false;
-                close(pipefd[pipeIndex]);
-                pipeIndex++;
-            }
+            for(int i = 0; i < numPipes * 2; i++)
+                close(pipefd[i]);
 
             if (execvp(arguments[0], arguments) == -1) {
                 std::cerr << "Error!" << std::endl;
-                _Exit(0);
+                exit(0);
             }
         }
 

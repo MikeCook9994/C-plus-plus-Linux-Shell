@@ -5,7 +5,7 @@ Command::Command(LinkedList<char *> * argList, int numArgs, const char * ifn, co
     inputFD = STDIN_FILENO;
     outFileName = ofn;
     outputFD = STDOUT_FILENO;
-    arguments = (char **)malloc(sizeof(char *) * numArgs);
+    arguments = (char **)malloc(sizeof(char *) * numArgs + 1);
     setArgList(argList, numArgs);
 }
 
@@ -21,5 +21,6 @@ void Command::setArgList(LinkedList<char *> * args, int numArgs) {
         arguments[i] = currArg->getData();
         currArg = currArg->getNext();
     }
+    arguments[numArgs] = NULL;
 
 }
