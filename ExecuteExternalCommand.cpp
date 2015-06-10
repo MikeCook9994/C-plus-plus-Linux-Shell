@@ -208,7 +208,7 @@ LinkedList<Command *> * buildCommands(LinkedList<char *> * tokens, LinkedList<Co
             //handles the creation of the my tee command
             outFileName = "PIPEWRITE";
             inFileName = "PIPEREAD";
-            arguments = new LinkedList<char *>((char *)"mytee");
+            arguments = new LinkedList<char *>((char *)"./mytee");
             numArgs++;
 
             command = new Command(arguments, numArgs, inFileName, outFileName);

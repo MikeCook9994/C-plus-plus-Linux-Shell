@@ -1,8 +1,6 @@
 all:	
 	g++ Shell.cpp ExecuteInternalCommand.cpp ExecuteExternalCommand.cpp Command.cpp -o LeShell -Wall -Werror
-
-debug:
-	g++ Shell.cpp ExecuteInternalCommand.cpp ExecuteExternalCommand.cpp Command.cpp -o LeShell -g
+	g++ MyTee.cpp -o mytee -Wall -Werror
 
 clean:
-	rm -rf LeShell *.o
+	rm -rf LeShell mytee *.o
